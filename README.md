@@ -183,7 +183,17 @@ In Winlator, open the container's settings (Edit Container) and set:
 
 Feel free to copy the rest of the settings shown above as a starting point.
 
-### Step 7: Run it in Winlator
+### Step 7: Set the Box64 preset for better performance
+
+Containers default to the **Intermediate** Box64 preset, which is the safe, compatible choice but leaves real performance on the table. In the container's **Advanced** tab, change **Box64 Preset** to **Performance** or, for the fastest result, this fork's custom **Extreme** preset (see [About this fork](#about-this-fork)):
+
+<p align="center">
+	<img src="screenshots/container-box64-preset.png" width="500" alt="Winlator container Advanced tab with Box64 Preset set to Extreme" />
+</p>
+
+Perfomance is more than enough to get the 60fps results shown in the screenshots above. If not, switching to Extreme could help
+
+### Step 8: Run it in Winlator
 
 1. Open Winlator, go into your container's file manager, and browse to where you copied the folder (it'll show up under the same drive Winlator maps your shared storage to).
 2. Run `launch_jak3_winlator.bat`.
