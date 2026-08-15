@@ -207,16 +207,6 @@ Perfomance is more than enough to get the 60fps results shown in the screenshots
 4. Back out of the container to Winlator's main screen, open the menu on the left side, and go to the **Shortcuts** tab. Your new shortcut will be there.
 5. Tap the **⋮** on that shortcut and choose **Add to home screen** for one-tap launching straight from your device's home screen.
 
-# Useful Tips
-
-- If you are experiencing performance issues, try changing the Box64 preset to `Performance` in Container Settings -> Advanced Tab.
-- For applications that use .NET Framework, try installing `Wine Mono` found in Start Menu -> System Tools -> Installers.
-- If some older games don't open, try adding the environment variable `MESA_EXTENSION_MAX_YEAR=2003` in Container Settings -> Environment Variables.
-- Try running the games using the shortcut on the Winlator home screen, there you can define individual settings for each game.
-- To display low resolution games correctly, try to enabling the `Force Fullscreen` option in the shortcut settings.
-- To improve stability in games that uses Unity Engine, try changing the Box64 preset to `Stability` or in the shortcut settings add the exec argument `-force-gfx-direct`.
-- If you are experiencing audio crackling, try increasing the average latency in ALSA/PulseAudio configuration. Old games like Unreal Gold resolve audio issues by increasing this value to 90ms.
-
 # Credits and Third-party apps
 
 - OpenGOAL / jak-project by the [OpenGOAL team](https://github.com/open-goal/jak-project) ([opengoal.dev](https://opengoal.dev))
