@@ -1,7 +1,7 @@
 [submodule "app"]
 	path = app
-	url = https://github.com/brunodev85/winlator-app
-	branch = main
+	url = https://github.com/Raekwon1603/winlator-app_OpenGOAL
+	branch = jak-daxter-box64-fix
 [submodule "vortek"]
 	path = vortek
 	url = https://github.com/brunodev85/vortek
