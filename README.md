@@ -95,14 +95,15 @@ Only a subset of `data\` is needed per game, not the whole install, and it's eas
 To make this foolproof, use the [`prepare-opengoal-game.ps1`](scripts/prepare-opengoal-game.ps1) script in this repo. Download that one file, open PowerShell, and run:
 
 ```powershell
-.\prepare-opengoal-game.ps1 -OpenGoalPath "C:\path\to\OpenGOAL\versions\official\v0.3.5" -Game jak3 -OutputPath "C:\path\to\put\the\result"
+.\prepare-opengoal-game.ps1 -OpenGoalPath "C:\path\to\OpenGOAL\versions\official\v0.3.5" -Game jak3 -OutputPath "C:\path\to\put\the\result" -InstallName "Jak 3"
 ```
 
 - `-OpenGoalPath` is the versioned OpenGOAL folder from Step 1 (the one directly containing `gk.exe`), whichever option you used in Step 2. Run this *after* Step 2 has completed for that game.
 - `-Game` is `jak1`, `jak2`, or `jak3`.
 - `-OutputPath` is any folder where you want the result to appear (e.g. your Desktop).
+- `-InstallName` is the top-level folder name for this install, e.g. `Jak 3`. This has to match whatever you name the folder once it's actually on your device, since the generated `.bat` file's launch path is built from this name. Only matters if you're installing more than one copy of the same game side by side (see [Installing mods](#installing-mods) below); otherwise just use the game's normal name.
 
-If you'd rather just run `.\prepare-opengoal-game.ps1` with no arguments, PowerShell will prompt you for each value one at a time, and the game prompt spells out the valid options directly (`Game (jak1,jak2 or jak3):`).
+If you'd rather just run `.\prepare-opengoal-game.ps1` with no arguments, PowerShell will prompt you for each value one at a time, and the prompts spell out the valid options directly (`Game (jak1,jak2 or jak3):`, `Install name (e.g. Jak 3, or Jak 3 Hero Mode for a mod):`).
 
 The script copies only what's needed, builds the correct folder layout, and writes the launch `.bat` file for you. The result is a single self-contained folder (e.g. `Jak 3\`) ready for Step 5.
 
@@ -206,6 +207,59 @@ Perfomance is more than enough to get the 60fps results shown in the screenshots
    Right-click the `.bat` file (tap with one finger, then a quick second tap with another finger) and choose **Create Shortcut**.
 4. Back out of the container to Winlator's main screen, open the menu on the left side, and go to the **Shortcuts** tab. Your new shortcut will be there.
 5. Tap the **⋮** on that shortcut and choose **Add to home screen** for one-tap launching straight from your device's home screen.
+
+# Installing mods
+
+Most OpenGOAL mods aren't runtime plugins, some are its own complete, standalone copy of the OpenGOAL toolchain (its own `gk.exe`, `goalc.exe`, `extractor.exe`, and `data/` folder), same shape as vanilla. That means the exact same pipeline used above for vanilla games works for mods too, no different tooling required.
+
+<p align="center">
+	<img src="screenshots/jak3-hero-mode-plus.png" width="600" alt="Jak 3 Hero Mode Plus mod running on the Thor, showing a custom Hero Level progress bar and different HUD not present in vanilla Jak 3" />
+</p>
+
+<sub>Jak 3 Hero Mode Plus, right at the start of the game, already showing custom mechanics (Hero Level, Jak 2 model and a different HUD) that don't exist in vanilla.</sub>
+
+### Getting a mod
+
+**Option A: the OpenGOAL Launcher's Mods menu (easier)**
+
+1. Open the Launcher, go to the **Mods** tab on the left side menu, and add a mod source URL. [jakmods.dev](https://jakmods.dev/) works as a source.
+2. Browse the mods listed for your game and install the one you want. The Launcher decompiles and compiles it against your ISO for you, same as it does for a normal game install.
+3. It lands under `features\<game>\mods\<source>\<mod-name>\`, wherever your Launcher install is. That folder has the same `gk.exe` / `goalc.exe` / `extractor.exe` / `data/` layout as any other OpenGOAL install, that's the folder you'll point at in the next step.
+
+**Option B: a standalone mod download**
+
+1. Find a mod for the game you want. [jakmods.dev](https://jakmods.dev/) and the [OpenGOAL-Mods GitHub org](https://github.com/OpenGOAL-Mods) are good places to look.
+2. Download the mod's release (usually a `.zip` for a specific platform, e.g. `windows-vX.X.X.zip`) and extract it somewhere on your PC. You should see the same `gk.exe` / `goalc.exe` / `extractor.exe` / `data/` layout as a normal OpenGOAL install, just with extra or modified content inside `data/`.
+3. Run the mod's own `extractor.exe` against your ISO, exactly like Step 2 above:
+   ```
+   extractor.exe -g jak3 -e -d -c -v "C:\path\to\your\Jak3.iso"
+   ```
+   This compiles the mod using its own (possibly modified) game logic, not vanilla's.
+
+### Packaging and installing it
+
+Run `prepare-opengoal-game.ps1` exactly as before, just pointed at the mod's folder instead of vanilla OpenGOAL's, and give it a distinct `-InstallName` so it doesn't collide with vanilla:
+
+```powershell
+.\prepare-opengoal-game.ps1 -OpenGoalPath "C:\path\to\the\mod\folder" -Game jak3 -OutputPath "C:\path\to\put\the\result" -InstallName "Jak 3 Hero Mode Plus"
+```
+
+This keeps the mod alongside vanilla as a completely separate folder, since installing a mod does not touch or overwrite your existing vanilla install. Whatever you pass to `-InstallName` has to match the folder name exactly once it's on your device, that's what the generated `.bat` uses to find its own files. Then copy it to your Thor and set it up the same way as Steps 4 through 8 above.
+
+### A note on saves
+
+Each install (vanilla, or any mod) keeps its own separate save, isolated from every other install, as long as its `.bat` file includes `--portable` (the ones this script generates already do). A save from vanilla Jak 3 won't appear in a mod like Hero Mode Plus, and vice versa, since a mod like this changes the game's own logic enough that a vanilla save often doesn't make sense there anyway.
+
+### Combining multiple mods
+
+There's no mod manager or plugin system doing this automatically, since each mod is really just modified source code that gets compiled. Whether two mods can be combined depends entirely on whether they touch the same underlying files:
+
+- If they change different files, you can typically merge them by hand: build one starting from vanilla OpenGOAL, then copy the second mod's changed files on top before running the extractor/compile step.
+- If they change the *same* files, there's no automatic merge, you'd need to manually compare and combine the conflicting changes yourself before compiling. Check a mod's own README/page first, some mods explicitly state what they're compatible with.
+
+### First launch of a new install
+
+The very first time you launch a freshly copied install (vanilla or a mod), it might fail to start or close right away. Just launch it again, it'll work the second time. This only happens once per install, after that it starts normally every time.
 
 # Credits and Third-party apps
 

@@ -5,7 +5,7 @@
   section of the README for the full walkthrough this script is part of.
 
 .EXAMPLE
-  .\prepare-opengoal-game.ps1 -OpenGoalPath "C:\Users\me\Downloads\Jak_and_Daxter_OpenGOAL\versions\official\v0.3.5" -Game jak3 -OutputPath "C:\Users\me\Desktop\Jak 3"
+  .\prepare-opengoal-game.ps1 -OpenGoalPath "C:\Users\me\Downloads\Jak_and_Daxter_OpenGOAL\versions\official\v0.3.5" -Game jak3 -OutputPath "C:\Users\me\Desktop" -InstallName "Jak 3"
 
   Run this AFTER that game has already been extracted/decompiled/compiled
   (Step 2 in the README, via either extractor.exe or the OpenGOAL Launcher's
@@ -24,17 +24,22 @@ param(
     [string]${Game (jak1,jak2 or jak3)},
 
     [Parameter(Mandatory = $true, HelpMessage = "Folder where the finished game folder should be created, e.g. C:\Users\you\Desktop")]
-    [string]$OutputPath
+    [string]$OutputPath,
+
+    [Parameter(Mandatory = $true, HelpMessage = "Top-level folder name for this install, e.g. Jak 3, or Jak 3 Hero Mode for a mod. Must match whatever folder name you actually copy onto the device, since the generated .bat's cd path is built from this name.")]
+    [Alias("InstallName")]
+    [string]${Install name (e.g. Jak 3, or Jak 3 Hero Mode for a mod)}
 )
 
 $Game = ${Game (jak1,jak2 or jak3)}
+$InstallName = ${Install name (e.g. Jak 3, or Jak 3 Hero Mode for a mod)}
 
 $ErrorActionPreference = "Stop"
 
 $gameFolderNames = @{ jak1 = "Jak and Daxter"; jak2 = "Jak 2"; jak3 = "Jak 3" }
 $innerFolderNames = @{ jak1 = "Jak_and_Daxter_OpenGOAL"; jak2 = "Jak_2"; jak3 = "Jak_3" }
 
-$gameFolderName = $gameFolderNames[$Game]
+$gameFolderName = $InstallName
 $innerFolderName = $innerFolderNames[$Game]
 $versionName = Split-Path $OpenGoalPath -Leaf
 
@@ -102,11 +107,14 @@ foreach ($item in $perGameItems) {
     }
 }
 
-# Launch script.
+# Launch script. --portable makes gk.exe save/load next to its own exe
+# (inside this game's own folder) instead of Wine's fake AppData, which is
+# both hard to find and shared across every game/mod running in the same
+# container. Keeps each game/mod's save fully separate and easy to back up.
 $batContent = @"
 @echo off
 cd /d "F:\$gameFolderName\$innerFolderName"
-versions\official\$versionName\gk.exe -v --proj-path "versions\official\$versionName\data" --game $Game -- -boot -fakeiso
+versions\official\$versionName\gk.exe -v --portable --proj-path "versions\official\$versionName\data" --game $Game -- -boot -fakeiso
 pause
 "@
 $batPath = Join-Path $destRoot "launch_$($Game)_winlator.bat"
@@ -115,4 +123,5 @@ Set-Content -Path $batPath -Value $batContent -Encoding ASCII
 Write-Host ""
 Write-Host "Done. Folder ready at: $destRoot" -ForegroundColor Green
 Write-Host "Copy this whole folder onto your device's storage, then run '$([System.IO.Path]::GetFileName($batPath))' from inside Winlator." -ForegroundColor Green
+Write-Host "The .bat expects this folder to be named exactly '$gameFolderName' on the device. If you rename it after copying, edit the .bat file's 'cd /d' line to match, or re-run this script with -InstallName set to the name you'll actually use." -ForegroundColor Yellow
 Write-Host "If your device maps shared storage to a different drive letter than F:, edit the .bat file's 'cd /d' line to match." -ForegroundColor Yellow
