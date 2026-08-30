@@ -1,0 +1,67 @@
+diff --git a/goal_src/jak1/engine/ps2/rpc-h.gc b/goal_src/jak1/engine/ps2/rpc-h.gc
+index 0ee03709f..78d421276 100644
+--- a/goal_src/jak1/engine/ps2/rpc-h.gc
++++ b/goal_src/jak1/engine/ps2/rpc-h.gc
+@@ -87,15 +87,23 @@
+       (when (nonzero? (rpc-busy? (-> this rpc-port)))
+         ;; we're busy
+         (if print-stall-warning (format 0 "STALL: waiting for IOP on RPC port #~D~%" (-> this rpc-port)))
+-        (while (nonzero? (rpc-busy? (-> this rpc-port)))
+-          (nop!)
+-          (nop!)
+-          (nop!)
+-          (nop!)
+-          (nop!)
+-          (nop!)
+-          (nop!)
+-          (nop!)))
++        ;; this loop used to spin here forever if the IOP never answered back. that happens on
++        ;; real hardware basically never, but we've seen it happen for real on Android/Wine/Box64,
++        ;; and when it does the whole game just hangs with no way out. give it a very generous
++        ;; number of tries and bail instead of looping forever.
++        (let ((stall-give-up-counter 0))
++          (while (and (nonzero? (rpc-busy? (-> this rpc-port))) (< stall-give-up-counter 8000000))
++            (+! stall-give-up-counter 1)
++            (nop!)
++            (nop!)
++            (nop!)
++            (nop!)
++            (nop!)
++            (nop!)
++            (nop!)
++            (nop!))
++          (when (>= stall-give-up-counter 8000000)
++            (format 0 "STALL: gave up waiting for IOP on RPC port #~D, it never finished~%" (-> this rpc-port)))))
+       ;; not longer busy, clear the flag!
+       (set! (-> active-buffer busy) #f)
+       (set! (-> active-buffer elt-used) (the-as uint 0))
+@@ -123,15 +131,20 @@
+         (when (nonzero? (rpc-busy? (-> obj rpc-port)))
+           ;; busy! print an error and stall!
+           (format 0 "STALL: waiting for IOP on RPC port #~D~%" (-> obj rpc-port))
+-          (while (nonzero? (rpc-busy? (-> obj rpc-port)))
+-            (nop!)
+-            (nop!)
+-            (nop!)
+-            (nop!)
+-            (nop!)
+-            (nop!)
+-            (nop!)
+-            (nop!)))
++          ;; same fix as sync above, don't spin here forever either.
++          (let ((stall-give-up-counter 0))
++            (while (and (nonzero? (rpc-busy? (-> obj rpc-port))) (< stall-give-up-counter 8000000))
++              (+! stall-give-up-counter 1)
++              (nop!)
++              (nop!)
++              (nop!)
++              (nop!)
++              (nop!)
++              (nop!)
++              (nop!)
++              (nop!))
++            (when (>= stall-give-up-counter 8000000)
++              (format 0 "STALL: gave up waiting for IOP on RPC port #~D, it never finished~%" (-> obj rpc-port)))))
+         ;; not busy.
+         (set! (-> active-buffer busy) #f)
+         (set! (-> active-buffer elt-used) 0))

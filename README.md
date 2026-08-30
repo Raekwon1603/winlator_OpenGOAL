@@ -6,6 +6,8 @@
 
 Winlator is an Android application that lets you to run Windows (x86_64) applications with Wine and Box86/Box64.
 
+**Jak 1 freezing for good partway through, Boggy Swamp included?** There's a fix, see [Known issues and fixes](#known-issues-and-fixes) below.
+
 # About this fork
 
 This is a fork of [brunodev85/winlator](https://github.com/brunodev85/winlator), tuned specifically for running **OpenGOAL** (the open-source, reverse-engineered reimplementation of the Jak and Daxter engine, not the original Sony/Naughty Dog game code) well on Android handhelds like the AYN Thor. All credit for the base Winlator app goes to its original author and contributors; see [Credits and Third-party apps](#credits-and-third-party-apps) below. This fork does not distribute any copyrighted game assets. You need your own legally-owned copy of each game to use it, as explained in [Setting up an OpenGOAL game](#setting-up-an-opengoal-game-jak-1--jak-2--jak-3).
@@ -262,6 +264,14 @@ There's no mod manager or plugin system doing this automatically, since each mod
 ### First launch of a new install
 
 The very first time you launch a freshly copied install (vanilla or a mod), it might fail to start or close right away. Just launch it again, it'll work the second time. This only happens once per install, after that it starts normally every time.
+
+# Known issues and fixes
+
+### Jak 1 freezing for good after a cutscene
+
+Game stops responding right after a cutscene, fuel cell victory scenes especially, sometimes at the same spot in Boggy Swamp every time. You have to force close it. This is a real bug in the original game's own code, not something this fork added. Fix is in [`scripts/patches/jak1-rpc-stall-fix`](scripts/patches/jak1-rpc-stall-fix), that folder's README explains the bug and has the actual source diff so you can see what changed before you run anything.
+
+Jak 1 only right now. Haven't checked if Jak 2/Jak 3 have the same bug.
 
 # Credits and Third-party apps
 
